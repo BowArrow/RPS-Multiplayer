@@ -1,0 +1,22 @@
+body {
+    transition: 0.5s;
+}
+
+#display {
+    height: 150px;
+    background-color: white;
+    opacity: 0.9;
+}
+
+
+.choice {
+    opacity: 0.8;
+}
+
+.choice:hover {
+    opacity: 1.0;
+}
+
+#username-display {
+    text-align: center;
+}

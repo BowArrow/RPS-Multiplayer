@@ -11,41 +11,126 @@
         crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.11/css/mdb.css">
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.4.1/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.4.1/firebaseui.css" />
 
-    <title>GIF This</title>
+    <title>RPS Multiplayer</title>
+
+    
 </head>
 
 <body>
-    <div class="container-fluid">
+    <div class="container-fluid"></div>
 
-        <div class="container mt-5">
-            <div class="row">
-                <div class="col-md-2"></div>
-                <div class="col-md-8 jumbotron mt-3" id="input-container">
-                    <div id="display"></div>
-                    <div class="input-group" id="user-input">
-                        <input type="text" class="form-control my-2" placeholder="Message.." aria-label="User Topic"
-                            aria-describedby="button-topic" id="user-topic" value="">
-                        <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="button" id="button-topic">Send</button>
+    <div class="container mt-3">
+        <div class="row">
+            <div class="col-md-2" id="user">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h1 id="username-display"></h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" id="userChoice-display"></div>
+                </div>
+            </div>
+            <div class="col-md-8 jumbotron mt-3 aqua-gradient" id="input-container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-10 input-group">
+                                <div class="sm-form input-group-prepend">
+                                    <button class="btn btn-info waves-effect m-0 btn-sm">Global</button>
+                                    <button class="btn btn-info waves-effect m-0 btn-sm disabled">Local</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2 float-right" id="status"><strong>ONLINE: </strong><a id="data-online">0</a></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12" id="display">
+                                <div id="text"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="md-form input-group bg-white">
+                            <div class="input-group-append">
+                                <button class="btn btn-info waves-effect m-0" id="loginBtn" type="button" data-toggle="modal"
+                                    data-target="#login">Login</button>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Message.." aria-label="Message"
+                                aria-describedby="basic-addon2" id="message">
+                            <div class="input-group-append">
+                                <button class="btn btn-info waves-effect m-0" type="button">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3" id="choices">
+                    <div class="col-sm-4 choice" id="rock" data-selected="false" value="rock">
+                        <img class="img-fluid" src="assets/images/rock.png">
+                    </div>
+                    <div class="col-sm-4 choice" id="paper" data-selected="false">
+                        <img class="img-fluid" src="assets/images/paper.png">
+                    </div>
+                    <div class="col-sm-4 choice" id="scissors" data-selected="false">
+                        <img class="img-fluid" src="assets/images/scissors.png">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <button type="button" class="btn btn-primary btn-sm" id="ready" style="width: 100%;">Ready</button>
+                </div>
             </div>
-
+            <div class="col-md-2" id="opponent">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h1 id="oppName-display"></h1>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" id="oppChoice-display"></div>
+                </div>
+            </div>
         </div>
+        <!-- modal -->
+        <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="login-title">Login</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body"> 
+                        <label for="username">Username: </label>
+                        <input type="text" id="username" maxlength="12" class="form-control">
+    
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="signIn">Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
 
-        <!-- Optional JavaScript -->
-        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-            crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.11/js/mdb.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-            crossorigin="anonymous"></script>
-        <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
-        <script src="assets/javascript/app.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.11/js/mdb.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+    <script src="assets/javascript/app.js"></script>
 </body>
 
 </html>
