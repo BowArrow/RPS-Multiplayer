@@ -16,7 +16,7 @@
 
     <title>RPS Multiplayer</title>
 
-    
+
 </head>
 
 <body>
@@ -33,6 +33,11 @@
                 <div class="row">
                     <div class="col-md-12" id="userChoice-display"></div>
                 </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2 id="userStats"></h2>
+                    </div>
+                </div>
             </div>
             <div class="col-md-8 jumbotron mt-3 aqua-gradient" id="input-container">
                 <div class="row">
@@ -41,7 +46,8 @@
                             <div class="col-md-10 input-group">
                                 <div class="sm-form input-group-prepend">
                                     <button class="btn btn-info waves-effect m-0 btn-sm">Global</button>
-                                    <button class="btn btn-info waves-effect m-0 btn-sm disabled">Local</button>
+                                    <button class="btn btn-info waves-effect m-0 btn-sm" id = "matchBtn" data-toggle="modal"
+                                    data-target="#match">Match</button>
                                 </div>
                             </div>
                             <div class="col-md-2 float-right" id="status"><strong>ONLINE: </strong><a id="data-online">0</a></div>
@@ -63,7 +69,7 @@
                             <input type="text" class="form-control" placeholder="Message.." aria-label="Message"
                                 aria-describedby="basic-addon2" id="message">
                             <div class="input-group-append">
-                                <button class="btn btn-info waves-effect m-0" type="button">Send</button>
+                                <button class="btn btn-info waves-effect m-0" type="button" id="sendIt">Send</button>
                             </div>
                         </div>
                     </div>
@@ -94,31 +100,61 @@
                 </div>
             </div>
         </div>
-        <!-- modal -->
+        <!-- modal login-->
         <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="loginLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="login-title">Login</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <div class="form-sm input-group">
+                            <button type="button" class="btn btn-primary btn-sm disabled" id="signInSelect">Sign In</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="signUpSelect">Sign Up</button>
+                        </div>
                     </div>
-                    <div class="modal-body"> 
-                        <label for="username">Username: </label>
-                        <input type="text" id="username" maxlength="12" class="form-control">
-    
+                    <div class="modal-body">
+                        <label for="email">Email: </label>
+                        <input type="text" id="email" class="form-control">
+
+                        <div class="d-none" id="dname-control">
+                            <label for="username">Username: </label>
+                            <input type="text" id="username" maxlength="12" class="form-control">
+                        </div>
+
+                        <label for="password">Password: </label>
+                        <input type="password" id="password" maxlength="15" class="form-control">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="signIn">Sign In</button>
+                        <button type="button" class="btn btn-primary d-none" id="signUp">Sign Up</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         </div>
-        
+        <!-- modal match -->
+        <div class="modal fade" id="match" tabindex="-1" role="dialog" aria-labelledby="matchLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="form-sm input-group">
+                            <button type="button" class="btn btn-primary btn-sm" id="createMatch">Create</button>
+                        </div>
+                    </div>
+                    <div class="modal-body" id="matchRooms">
+
+                    </div>
+                    <div class="modal-footer">
+                        <div class="form-sm input-group">
+                            <button type="button" class="btn btn-primary btn-sm disabled" id="joinMatch">Join</button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
     </div>
-    
+
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

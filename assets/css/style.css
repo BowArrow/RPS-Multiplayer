@@ -6,8 +6,18 @@ body {
     height: 150px;
     background-color: white;
     opacity: 0.9;
+    overflow: auto;
+    line-height: 10px;
 }
 
+#display #text{
+    float: right;
+}
+
+#matchRooms {
+    height: 150px;
+    overflow: auto;
+}
 
 .choice {
     opacity: 0.8;
@@ -19,4 +29,12 @@ body {
 
 #username-display {
     text-align: center;
+}
+
+#oppName-display {
+    text-align: center;
+}
+
+#userStats {
+    margin-top: 600px;
 }
