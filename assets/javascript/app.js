@@ -128,6 +128,10 @@ $(document).ready(function () {
         var message = snapshot.val()
         addChatMessage(message.name, message.message)
     })
+    chatRef.on("child_removed", function(snapshot) {
+        var messageDisplay = $("#text");
+        messageDisplay.removeChild(messageDisplay.childNodes[0]);
+    })
     //buttons
     var signUpS = $("#signUpSelect");
     var signInS = $("#signInSelect");
