@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://cdn.firebase.com/libs/firebaseui/3.4.1/firebaseui.js"></script>
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.4.1/firebaseui.css" />
-
+    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
     <title>RPS Multiplayer</title>
 
 
@@ -27,7 +27,7 @@
             <div class="col-md-2" id="user">
                 <div class="row mb-3">
                     <div class="col-md-12">
-                        <h1 id="username-display"></h1>
+                        <h1 class="teal-text" id="username-display" style="font-family: 'Permanent Marker', cursive;"></h1>
                     </div>
                 </div>
                 <div class="row">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
                 <div class="row mt-3" id="choices">
-                    <div class="col-sm-4 choice" id="rock" data-selected="false" value="rock">
+                    <div class="col-sm-4 choice" id="rock" data-selected="false">
                         <img class="img-fluid" src="assets/images/rock.png">
                     </div>
                     <div class="col-sm-4 choice" id="paper" data-selected="false">
@@ -86,7 +86,7 @@
                     </div>
                 </div>
                 <div class="row mt-2">
-                    <button type="button" class="btn btn-primary btn-sm" id="ready" style="width: 100%;">Ready</button>
+                    <button type="button" class="btn btn-primary btn-sm disabled" id="ready" style="width: 100%;">Ready</button>
                 </div>
             </div>
             <div class="col-md-2" id="opponent">
@@ -144,7 +144,6 @@
                     </div>
                     <div class="modal-footer">
                         <div class="form-sm input-group">
-                            <button type="button" class="btn btn-primary btn-sm disabled" id="joinMatch">Join</button>
                             <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
                         </div>
                     </div>

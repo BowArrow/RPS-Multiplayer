@@ -1,35 +1,35 @@
 $.fn.rpsMulti = function () {
     var t = this;
     t.choice = "choice";
-    t.username = "user";
-    t.wins = 0;
-    t.loses = 0;
-    t.ready = false;
+    t.username;
+    t.creatorWins;
+    t.joinerWins;
 
-    t.game = function (choice1, choice2) {
-        if (choice1 === "paper") {
-            if (choice2 === "rock") {
-                users[t.username].wins++;
-            } else if (choice2 === "scissor") {
-                users[t.username].loses++;
+    t.game = function (player1, player2) {
+        if (player1.choice === "paper") {
+            if (player2.choice === "rock") {
+                creatorWins = true;
+            } else if (player2.choice === "scissor") {
+                joinerWins = true;
             }
         }
-        if (choice1 === "scissor") {
-            if (choice2 === "rock") {
-                users[t.username].loses++;
-            } else if (choice2 === "paper") {
-                users[t.username].wins++;
+        if (player1.choice === "scissor") {
+            if (player2.choice === "rock") {
+                joinerWins = true;
+            } else if (player2.choice === "paper") {
+                creatorWins = true;
             }
         }
-        if (choice1 === "rock") {
-            if (choice2 === "scissor") {
-                users[t.username].wins++;
-            } else if (choice2 === "paper") {
-                users[t.username].loses++;
+        if (player1.choice === "rock") {
+            if (player2.choice === "scissor") {
+                creatorWins = true;
+            } else if (player2.choice === "paper") {
+                joinerWins = true;
             }
         }
-        if (choice1 === choice2) {
-            return "draw";
+        if (player1.choice === player2.choice) {
+            creatorWins = true;
+            joinerWins = true
         }
 
     }
@@ -68,6 +68,7 @@ $(document).ready(function () {
     if (rps.username === "user") {
         $("#ready").addClass("disabled");
     }
+
     config = {
         apiKey: "AIzaSyDA2oCBDmOzEl138x0wHmFNoY92beJVKVM",
         authDomain: "berkley-test-casey.firebaseapp.com",
@@ -79,16 +80,49 @@ $(document).ready(function () {
     firebase.initializeApp(config);
     var database = firebase.database();
     var auth = firebase.auth();
-    //Rework goes here
+    //Rework goes hered
+
+    //code
+
+
+    chatRef = database.ref("/chat");
+
+    chatRef.on("child_added", function (snapshot) {
+        var message = snapshot.val()
+        addChatMessage(message.name, message.message)
+    })
+    chatRef.on("child_removed", function () {
+        var messageDisplay = $("#text");
+        messageDisplay.removeChild(messageDisplay.childNodes[0]);
+    })
+
+    gameRef = database.ref("/games");
+
+    var STATE = { OPEN: 1, JOINED: 2, CHOICE_MADE: 3, DECIDE_WINNER: 4, COUNTDOWN: 5, COMPLETE: 6 }
+    var openGames = gameRef.orderByChild("state").equalTo(STATE.OPEN);
+    
+    openGames.on("child_added", function (snapshot) {
+        var data = snapshot.val();
+        if (data.creator.uid != auth.currentUser.uid) {
+            addJoinGameButton(snapshot.key, data);
+        }
+    });
+
+    openGames.on("child_removed", function (snapshot) {
+        var item = $("#" + snapshot.key);
+        if (item) {
+            item.remove();
+        }
+    })
+
     //functions
     function submitCreateAccount() {
-        var displayName = $("#username");
-        var email = $("#email");
-        var password = $("#password");
+        var displayName = $("#username").val();
+        var email = $("#email").val();
+        var password = $("#password").val();
 
-        auth.createUserWithEmailAndPassword(email.val(), password.val())
-            .then(function (user) {
-                user.updateProfile({ displayName: displayName.val() });
+        auth.createUserWithEmailAndPassword(email, password).then(function (user) {
+                user.updateProfile({ displayName: displayName });
             });
     }
 
@@ -99,6 +133,13 @@ $(document).ready(function () {
         auth.signInWithEmailAndPassword(email.val(), password.val())
     }
 
+    function signOutUser(){
+        firebase.auth().signOut().then(function() {
+            console.log("Sign-out successful.")
+          }, function(error) {
+            console.log(error)
+          });
+    }
     function googleSignin(googleUser) {
         var credential = firebase.auth.GoogleAuthProvider.credential({
             'idToken': googleUser.getAuthResponse().id_token
@@ -107,7 +148,7 @@ $(document).ready(function () {
     }
 
     function sendChatMessage() {
-        ref = database.ref("/chat").limit(500)
+        ref = database.ref("/chat");
         messageField = $("#message");
 
         ref.push().set({
@@ -122,23 +163,169 @@ $(document).ready(function () {
         p.text(arg1 + ": " + arg2);
         messageDisplay.append(p);
     }
-    chatRef = database.ref("/chat");
 
-    chatRef.on("child_added", function (snapshot) {
-        var message = snapshot.val()
-        addChatMessage(message.name, message.message)
-    })
-    chatRef.on("child_removed", function(snapshot) {
-        var messageDisplay = $("#text");
-        messageDisplay.removeChild(messageDisplay.childNodes[0]);
-    })
+    function createGame() {
+                console.log("creating a game!");
+        enableCreateGame(false);
+
+        var user = firebase.auth().currentUser;
+        var currentGame = {
+            creator: {
+                uid: user.uid,
+                displayName: user.displayName
+            },
+            state: STATE.OPEN
+        };
+
+        var key = gameRef.push();
+        key.set(currentGame, function(error) {
+            if (error) {
+                console.log("Uh oh, error creating game.", error);
+                UI.snackbar({message: "Error creating game"});
+            } else {
+                //disable access to joining other games
+                console.log("I created a game!", key);
+                //drop this game, if I disconnect
+                key.onDisconnect().remove();
+                gameList.style.display = "none";
+                watchGame(key.key);
+            }
+        })
+    }
+
+    function joinGame(key) {
+        console.log("Attempting to join game: ", key);
+        var user = firebase.auth().currentUser;
+        gameRef.child(key).transaction(function(game) {
+            //only join if someone else hasn't
+            if (!game.joiner) {
+                game.state = STATE.JOINED;
+                game.joiner = {
+                    uid: user.uid,
+                    displayName: user.displayName
+                }
+            }
+            return game;
+        }, function(error, committed, snapshot) {
+            if (committed) {
+                if (snapshot.val().joiner.uid == user.uid) {
+                    enableCreateGame(false);
+                    watchGame(key);
+                } else {
+                    UI.snackbar({message: "Game already joined. Please choose another."});
+                }
+            } else {
+                console.log("Could not commit when trying to join game", error);
+                UI.snackbar({message: "Error joining game"});
+            }
+        });
+    }
+
+    function addJoinGameButton(arg1, arg2) {
+        var btn = $("<button>");
+        btn.attr({
+            class: "btn btn-info btn-sm",
+            id: arg1,
+            value: arg2.creator.displayName
+
+        }).text(arg2.creator.displayName).css({
+            "text-align": "center",
+            "width": "97%"
+        })
+        $("#matchRooms").append(btn);
+
+    }
+
+    function countdownToDisplay (){
+        var count = 3;
+        var myCount = setInterval(intervalFunction, 1000);
+        function intervalFunction(){
+            var display = $("oppChoice-display");
+            display.html("");
+            var div = $("<div>");
+            div.text(count).attr({
+                class: "display-1"
+            }).css({
+                "font-family": "'Permanent Marker', cursive;"
+            });
+            display.append(div);
+            count--;
+        } 
+        if (count === 0){
+            clearInterval(myCount);
+            display.html("")
+            break
+        }
+
+    }
+    function addChoiceToGame(gameRefKey, game, choice) {
+        var data = {state: STATE.CHOICE_MADE};
+        if (game.creator.uid == auth.currentUser.uid){
+            data["creator/choice"] = choice;
+        } else {
+            data["joiner/choice"] = choice;
+        }
+
+        var display = $("oppChoice-display");
+            display.html("");
+            var img = $("<img>");
+            img.attr("src", `assets/images/${data["joiner/choice"]}.png`)
+            display.append(img);
+        gameRefKey.update(data);
+    }
+
+    function showWinner(gameRefKey, game){
+        rps.game(game.creator.choice, game.joiner.choice)
+        
+        gameRefKey.update({
+            state: STATE.COMPLETE,
+            "creator/wins": rps.creatorWins,
+            "joiner/wins": rps.joinerWins
+        })
+        if (rps.creatorWins === true) {
+            var display = $("oppChoice-display");
+            display.html("");
+            var div = $("<div>");
+            div.text("Winner").attr({
+                class: "display-1"
+            }).css({
+                "font-family": "'Permanent Marker', cursive;"
+            });
+            display.append(div);
+        } else {
+            var display = $("oppChoice-display");
+            display.html("");
+            var div = $("<div>");
+            div.text("You lose!").attr({
+                class: "display-1"
+            }).css({
+                "font-family": "'Permanent Marker', cursive;"
+            });
+            display.append(div);
+        }
+        
+    }
+
+    function watchGame(key) {
+        var gameRefKey = gameRef.child(key);
+        gameRefKey.on("value", function(snapshot) {
+            var game = snapshot.val();
+            switch (game.state) {
+                case STATE.JOINED: joinedGame(gameRefKey, game); break;
+                case STATE.CHOICE_MADE: addChoiceToGame(gameRefKey, game, rps.choice); break;
+                case STATE.COUNTDOWN: countdownToDisplay(); break;
+                case STATE.COMPLETE: showWinner(gameRefKey); break;
+            }
+        })
+    }
+
     //buttons
     var signUpS = $("#signUpSelect");
     var signInS = $("#signInSelect");
     var dnameC = $("#dname-control");
     var signIn = $("#signIn");
     var signUp = $("#signUp");
-
+    var ready = $("#ready");
     $("body").on("click", "#signUpSelect", function (e) {
         e.preventDefault();
         signInS.removeClass("disabled");
@@ -160,19 +347,23 @@ $(document).ready(function () {
     $("body").on("click", "#signIn", function (e) {
         e.preventDefault();
         signInWithEmailandPassword();
-        var username = auth.currentUser.displayName;
-        $("#loginBtn").html(username).addClass("disabled");
-        $("#login").modal("toggle");
-        rps.checkReady();
+        rps.username = auth.currentUser.displayName;
+        setTimeout(function(){
+            $("#loginBtn").html(rps.username).addClass("disabled");
+            ready.removeClass("disabled");
+            $("#login").modal("toggle");
+        }, 500)
     })
 
     $("body").on("click", "#signUp", function (e) {
         e.preventDefault();
         submitCreateAccount();
-        var username = auth.currentUser.displayName;
-        $("#loginBtn").html(username).addClass("disabled");
-        $("#login").modal("toggle");
-        rps.checkReady();
+        setTimeout(function(){
+            var username = auth.currentUser.displayName;
+            $("#loginBtn").html(username).addClass("disabled");
+            ready.removeClass("disabled")
+            $("#login").modal("toggle");
+        }, 500)
 
     })
 
@@ -186,6 +377,16 @@ $(document).ready(function () {
         }, 500);
     })
 
+    $("body").on("click", "#createMatch", function (e) {
+        e.preventDefault();
+        createGame();
+    })
+
+    $("#matchRooms").on("click", "button", function(e){
+        e.preventDefault();
+        joinGame($(this).attr("id"));
+        $("#match").modal("toggle");
+    })
     //Reworking
 
     $("#choices").on("click", "div", function () {
@@ -226,7 +427,9 @@ $(document).ready(function () {
     presenceRef.on("value", function (snapshot) {
         if (snapshot.val()) {
             userRef.onDisconnect().remove();
-
+            userRef.onDisconnect(function(){
+                signOutUser();
+            })
             userRef.set(true);
         }
     });
@@ -239,7 +442,7 @@ $(document).ready(function () {
 
     $("#ready").on("click", function (e) {
         e.preventDefault();
-        var users = database.ref("/users/").child();
+        
         var choiceDiv = $("#userChoice-display");
         choiceDiv.html("");
 
@@ -248,12 +451,10 @@ $(document).ready(function () {
 
         img.attr({
             "src": `assets/images/${rps.choice}.png`,
-            "class": "img-fluid"
+            "class": "img-fluid animated bounceIn fast"
         });
-
         choiceDiv.append(img);
-
-        nameDiv.text(rps.username);
+        nameDiv.text(auth.currentUser.displayName);
 
         $("#ready").addClass("disabled");
 
